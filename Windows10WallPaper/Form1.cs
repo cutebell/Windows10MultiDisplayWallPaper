@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using Windows10WallPaper.dialog;
 using Windows10WallPaper.model;
+using Windows10WallPaper.Properties;
 using Windows10WallPaper.service;
 using Windows10WallPaper.usercontrol;
 
@@ -14,12 +16,17 @@ namespace Windows10WallPaper
     /// </summary>
     public partial class Form1 : Form
     {
+        private ProgressForm progressForm;
         /// <summary>
         /// コンストラクタ
         /// </summary>
         public Form1()
         {
             InitializeComponent();
+            this.progressForm = new ProgressForm();
+
+            this.openFileDialog1.FileName = Settings.Default.OpenPath;
+            this.saveFileDialog1.FileName = Settings.Default.SavePath;
         }
 
         /// <summary>
@@ -32,34 +39,25 @@ namespace Windows10WallPaper
             this.buttonReload_Click(sender, e);
         }
 
+        /// <summary>
+        /// 壁紙設定ボタン押下
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void buttonSetWallPaper_Click(object sender, EventArgs e)
         {
-            try
+            if (DialogResult.OK.Equals(this.openFileDialog1.ShowDialog()))
             {
-                List<ScreenModel> screenModelList = new List<ScreenModel>();
-                foreach (Control conrtol in this.panel1.Controls)
-                {
-                    WallPaperControll wallPaperControll = (WallPaperControll)conrtol;
-                    ScreenModel screenModel = new ScreenModel();
-                    screenModel.Screen = wallPaperControll.Screen;
-                    screenModel.bitmap = new Bitmap(wallPaperControll.FilePath);
-
-                    screenModelList.Add(screenModel);
-                }
-
-                if (DialogResult.OK.Equals(this.openFileDialog1.ShowDialog()))
-                {
-                    SetWallPaper setWallPAper = new SetWallPaper();
-                    setWallPAper.process(screenModelList, this.openFileDialog1.FileName);
-                }
+                this.backgroundWorker2.RunWorkerAsync(this.openFileDialog1.FileName);
+                this.progressForm.ShowDialog(this);
             }
-            catch (Exception exception)
-            {
-                MessageBox.Show(this, exception.StackTrace, exception.ToString(), MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
         }
 
+        /// <summary>
+        /// リロードボタン押下
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void buttonReload_Click(object sender, EventArgs e)
         {
             this.panel1.Controls.Clear();
@@ -155,6 +153,47 @@ namespace Windows10WallPaper
             
         }
 
+        private void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                List<ScreenModel> screenModelList = new List<ScreenModel>();
+                foreach (Control conrtol in this.panel1.Controls)
+                {
+                    WallPaperControll wallPaperControll = (WallPaperControll)conrtol;
+                    ScreenModel screenModel = new ScreenModel();
+                    screenModel.Screen = wallPaperControll.Screen;
+                    screenModel.bitmap = new Bitmap(wallPaperControll.FilePath);
 
+                    screenModelList.Add(screenModel);
+                }
+
+                SetWallPaper setWallPAper = new SetWallPaper();
+                setWallPAper.process(screenModelList, (string)e.Argument);
+            }
+            catch (Exception exception)
+            {
+                this.backgroundWorker2.ReportProgress(0, exception);
+                
+            }
+        }
+
+        private void backgroundWorker2_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            Exception exception = (Exception)e.UserState;
+            MessageBox.Show(this, exception.StackTrace, exception.ToString(), MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            this.progressForm.Close();
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Settings.Default.OpenPath = this.openFileDialog1.FileName;
+            Settings.Default.SavePath = this.saveFileDialog1.FileName;
+            Settings.Default.Save();
+        }
     }
 }

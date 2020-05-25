@@ -3,11 +3,29 @@ using System.Windows.Forms;
 
 namespace Windows10WallPaper.usercontrol
 {
+    /// <summary>
+    /// 壁紙設定コントロール
+    /// </summary>
     public partial class WallPaperControll : UserControl
     {
+        /// <summary>
+        /// オープンファイルダイアログ
+        /// </summary>
         private OpenFileDialog OpenFileDialog { get;  set; }
+
+        /// <summary>
+        /// ピクチャーボックス
+        /// </summary>
         private PictureBox PictureBox { get; set; }
+
+        /// <summary>
+        /// Screen
+        /// </summary>
         public Screen Screen { get; set; }
+
+        /// <summary>
+        /// ファイルパス
+        /// </summary>
         public String FilePath
         {
             get
@@ -16,6 +34,12 @@ namespace Windows10WallPaper.usercontrol
             }
         }
 
+        /// <summary>
+        /// 壁紙設定用コントローラ
+        /// </summary>
+        /// <param name="openFileDialog"></param>
+        /// <param name="pictureBox"></param>
+        /// <param name="screen"></param>
         public WallPaperControll(OpenFileDialog openFileDialog, PictureBox pictureBox, Screen screen)
         {
             InitializeComponent();
@@ -26,6 +50,11 @@ namespace Windows10WallPaper.usercontrol
             this.richTextBox1.Text = this.Screen.ToString();
         }
 
+        /// <summary>
+        /// 壁紙選択ボタン押下
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
             if(DialogResult.OK.Equals(this.OpenFileDialog.ShowDialog()))

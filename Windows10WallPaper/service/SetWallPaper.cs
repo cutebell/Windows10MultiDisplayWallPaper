@@ -9,18 +9,29 @@ using Windows10WallPaper.model;
 
 namespace Windows10WallPaper.service
 {
+    /// <summary>
+    /// 安全な呼び出し
+    /// </summary>
     internal static class NativeMethods
     {
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern bool SystemParametersInfo(uint uAction, uint uParam, string lpvParam, uint fuWinIni);
     }
 
+    /// <summary>
+    /// 壁紙設定クラス
+    /// </summary>
     public class SetWallPaper
     {
         private const uint SPI_SETDESKWALLPAPER = 0x0014;
         private const uint SPIF_UPDATEINIFILE = 0x0001;
         private const uint SPIF_SENDWININICHANGE = 0x0002;
 
+        /// <summary>
+        /// 処理
+        /// </summary>
+        /// <param name="screenModelList"></param>
+        /// <param name="filePath"></param>
         public void process(List<ScreenModel> screenModelList, String filePath)
         {
             // 上下左右のMAXを取得し四角形を作成する
